@@ -33,7 +33,7 @@ Requires Python 3.12+ and [uv](https://docs.astral.sh/uv/).
 git clone https://github.com/<you>/agent-bridge
 cd agent-bridge
 uv sync --extra dev
-uv run pytest          # 40+ tests, should be green
+uv run pytest          # 52 tests, should be green
 ```
 
 Register it with any MCP client. For Claude Code:
