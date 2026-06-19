@@ -25,15 +25,32 @@ The design bet: **agents don't need a knowledge graph to coordinate. They need a
 
 ---
 
+## Relationship to bridge-db
+
+`agent-bridge` is the generic, reusable shared-state bus extracted from a more
+opinionated local operating system. If you are working on the author's machine,
+that production local spine is [`bridge-db`](https://github.com/saagpatel/bridge-db):
+it adds machine-specific integrations such as principal/auth rollout, source
+trust, Claude.ai file fallback sync, shipped-event receipts, Notion sync
+contracts, cost records, audit logs, and richer observability.
+
+Use `agent-bridge` when you want the portable core pattern: context sections,
+activity, handoffs, snapshots, lexical recall, and health over one local SQLite
+file. Do not register it as a second live bridge next to an existing `bridge-db`
+deployment unless you intentionally want a separate, isolated state store.
+
+---
+
 ## Install
 
 Requires Python 3.12+ and [uv](https://docs.astral.sh/uv/).
 
 ```bash
-git clone https://github.com/<you>/agent-bridge
+git clone https://github.com/saagpatel/agent-bridge
 cd agent-bridge
 uv sync --extra dev
-uv run pytest          # 52 tests, should be green
+uv run pytest
+uv run ruff check .
 ```
 
 Register it with any MCP client. For Claude Code:
@@ -43,6 +60,18 @@ claude mcp add --scope user agent-bridge -- uv run --directory /abs/path/to/agen
 ```
 
 For Claude Desktop / other clients, point them at the command `uv run --directory /abs/path/to/agent-bridge python -m agent_bridge` over stdio.
+
+For Codex, add a stdio server block to `~/.codex/config.toml`:
+
+```toml
+[mcp_servers.agent-bridge]
+command = "uv"
+args = ["run", "--directory", "/abs/path/to/agent-bridge", "python", "-m", "agent_bridge"]
+```
+
+If this machine already has a production bridge such as `bridge-db`, keep
+`agent-bridge` unregistered or point it at a deliberately separate test DB.
+Running both against normal agent workflows will split coordination state.
 
 ---
 
