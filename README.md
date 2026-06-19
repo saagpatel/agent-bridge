@@ -87,6 +87,16 @@ Running both against normal agent workflows will split coordination state.
 
 ---
 
+## Release Notes
+
+### 0.1.2
+
+- Refresh locked transitive runtime dependencies flagged by Dependabot:
+  `cryptography`, `starlette`, and the `mcp` SDK path that brings in
+  Starlette.
+
+---
+
 ## Configure (all optional)
 
 Everything machine-specific is an environment variable. Defaults are sensible.
