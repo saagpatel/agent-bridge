@@ -9,7 +9,7 @@ authors = [{ name = "agent-bridge contributors" }]
 keywords = ["mcp", "ai-agents", "claude", "coordination", "sqlite", "fts5"]
 dependencies = [
     "aiosqlite>=0.20",
-    "mcp>=1.2",
+    "mcp>=1.2,<2.0",
 ]
 
 [project.scripts]
