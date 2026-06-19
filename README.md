@@ -1,6 +1,10 @@
-# agent-bridge
+# AgenticBridge
 
 **A SQLite-backed MCP server that gives your AI coding agents a shared memory bus.**
+
+PyPI distribution name: `AgenticBridge`. The Python module remains
+`agent_bridge`, the installed CLI remains `agent-bridge`, and the source
+repository remains `agent-bridge`.
 
 You run more than one coding agent now. Maybe Claude Code in one terminal and Codex in another. Maybe a planner model in a chat window dispatching work to executors on your machine. The problem isn't the agents — it's that **none of them know what the others did.** Every session starts cold. Work gets redone. Handoffs happen by copy-paste.
 
