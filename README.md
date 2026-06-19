@@ -49,6 +49,14 @@ deployment unless you intentionally want a separate, isolated state store.
 
 Requires Python 3.12+ and [uv](https://docs.astral.sh/uv/).
 
+From PyPI:
+
+```bash
+uvx --from AgenticBridge agent-bridge --status
+```
+
+From source:
+
 ```bash
 git clone https://github.com/saagpatel/agent-bridge
 cd agent-bridge

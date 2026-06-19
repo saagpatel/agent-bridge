@@ -1,6 +1,6 @@
 [project]
 name = "AgenticBridge"
-version = "0.1.0"
+version = "0.1.1"
 description = "A SQLite-backed MCP server that gives your AI coding agents a shared memory bus."
 readme = "README.md"
 requires-python = ">=3.12"
