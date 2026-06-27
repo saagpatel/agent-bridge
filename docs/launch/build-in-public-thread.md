@@ -68,7 +68,7 @@ runs under a flat subscription, so out-of-pocket is a fixed line item.
 That gap is the whole reason one person can run a team of agents.
 
 **8/**
-It's MIT, Python, zero infra. `uv sync && uv run pytest` → 52 green tests.
+It's MIT, Python, zero infra. `uv sync --extra dev && uv run pytest` → 52 green tests.
 Register with one `claude mcp add` line and your agents share state.
 
 Repo + a full writeup of the one-person "AI operating system" it came from:

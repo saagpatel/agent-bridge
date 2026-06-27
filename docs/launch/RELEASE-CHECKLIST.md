@@ -13,7 +13,7 @@ are the steps **you** take to publish, in order.
 
 ## 1. Repo prep (local)
 
-- [ ] `cd /Users/d/Projects/agent-bridge`
+- [ ] `cd /path/to/agent-bridge`
 - [ ] Branch is `feat/initial-release` with one commit. Review the diff:
       `git show --stat HEAD`
 - [ ] Re-run the gate: `uv sync --extra dev && uv run pytest -q && uv run ruff check`
@@ -48,7 +48,8 @@ are the steps **you** take to publish, in order.
 
 - [ ] Watch the HN thread for the first 2 hours and answer questions (prep is in
       `show-hn.md`).
-- [ ] Tag a release: `gh release create v0.1.0 --generate-notes`.
+- [ ] Tag a release: `gh release create v0.1.2 --generate-notes` (match
+      `pyproject.toml` `version`).
 - [ ] If it gets traction, add a CONTRIBUTING.md and a couple of GitHub issues
       labeled `good first issue` (e.g. an HTTP transport, a `cost_records` table).
 
