@@ -12,7 +12,7 @@ Ran `grep` across all `.py`/`.md`/`.toml` in the public repo for:
 
 | Pattern class | Searched for | Result |
 |---|---|---|
-| Filesystem paths | `/Users/`, `/Users/d`, home paths | **none** (only `/abs/path/to/...` placeholders in docs) |
+| Filesystem paths | `/Users/`, `~`, home paths | **none** (only `/abs/path/to/...` placeholders in docs) |
 | Operator identity | real name, mailbox address | **none** |
 | Network internals | the local control-plane port, `127.0.0.1` | **none** |
 | Security internals | `hard_deny` / `hard-deny`, `personal-ops`, `ssh`/`.aws`/`gnupg` | **none** |
