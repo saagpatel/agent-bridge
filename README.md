@@ -52,7 +52,7 @@ Requires Python 3.12+ and [uv](https://docs.astral.sh/uv/).
 From PyPI:
 
 ```bash
-uvx --from AgenticBridge agent-bridge --status
+uvx --from AgenticBridge agent-bridge --version
 ```
 
 From source:
@@ -60,7 +60,7 @@ From source:
 ```bash
 git clone https://github.com/saagpatel/agent-bridge
 cd agent-bridge
-uv sync --extra dev
+uv sync --frozen --extra dev
 uv run pytest
 uv run ruff check .
 ```
@@ -112,6 +112,33 @@ Everything machine-specific is an environment variable. Defaults are sensible.
 Agent identities are **not** baked into the schema — set `AGENT_BRIDGE_AGENTS` to whatever your fleet is called (`cursor`, `aider`, `windsurf`, `human`, …).
 
 ---
+
+## Local verification
+
+Run commands from the repository root with Python 3.12+ and `uv`. CI uses
+`uv sync --frozen --extra dev`, `uv run ruff check .`, and `uv run pytest`.
+For a focused database/health check, use `uv run pytest tests/test_health.py`;
+the tests create their own temporary SQLite databases (`tests/conftest.py`).
+There is no separate formatter, typecheck, or browser UI gate configured.
+
+CLI diagnostics call `open_db`: even `--status` and `--doctor` may create or
+migrate the selected database. For a disposable smoke check, choose both paths
+explicitly instead of using the normal data store:
+
+```bash
+bridge_fixture=$(mktemp -d)
+AGENT_BRIDGE_DB_PATH="$bridge_fixture/bridge.db" \
+AGENT_BRIDGE_MARKDOWN_PATH="$bridge_fixture/bridge.md" \
+  uv run python -m agent_bridge --status
+AGENT_BRIDGE_DB_PATH="$bridge_fixture/bridge.db" \
+AGENT_BRIDGE_MARKDOWN_PATH="$bridge_fixture/bridge.md" \
+  uv run python -m agent_bridge --doctor
+```
+
+The generated files are disposable fixture data. MCP client registration and a
+real stdio/client interaction are separate integration checks; unit tests and
+these diagnostics do not prove client registration. No live bridge is needed
+for local verification.
 
 ## CLI
 

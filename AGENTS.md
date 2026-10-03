@@ -17,19 +17,11 @@ The repo is on `feat/initial-release` with the v0.1.0 implementation present. It
 
 ## How To Run
 
-```sh
-uv sync --extra dev
-uv run pytest
-uv run ruff check .
-uv run python -m agent_bridge --status
-uv run python -m agent_bridge --doctor
-```
-
-Start the MCP server over stdio with:
-
-```sh
-uv run python -m agent_bridge
-```
+Use [README local verification](README.md#local-verification) for frozen
+installation, focused/full tests, lint and isolated CLI diagnostics. Diagnostic
+commands open the selected database; use the documented temporary fixture for
+verification. The README Install and CLI sections describe intentional MCP
+registration and server startup separately.
 
 ## Known Risks
 
