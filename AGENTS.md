@@ -6,7 +6,7 @@
 
 ## Current State
 
-The repo is on `feat/initial-release` with the v0.1.0 implementation present. It has a real test suite under `tests/`, package metadata in `pyproject.toml`, and architecture notes under `docs/`.
+Package metadata in `pyproject.toml` and `uv.lock` is at v0.1.2; the CLI version constant in `src/agent_bridge/__init__.py` remains v0.1.0. It has a real test suite under `tests/` and architecture notes under `docs/`.
 
 ## Stack
 
@@ -17,19 +17,11 @@ The repo is on `feat/initial-release` with the v0.1.0 implementation present. It
 
 ## How To Run
 
-```sh
-uv sync --extra dev
-uv run pytest
-uv run ruff check .
-uv run python -m agent_bridge --status
-uv run python -m agent_bridge --doctor
-```
-
-Start the MCP server over stdio with:
-
-```sh
-uv run python -m agent_bridge
-```
+Use [README local verification](README.md#local-verification) for frozen
+installation, focused/full tests, lint and isolated CLI diagnostics. Diagnostic
+commands open the selected database; use the documented temporary fixture for
+verification. The README Install and CLI sections describe intentional MCP
+registration and server startup separately.
 
 ## Known Risks
 

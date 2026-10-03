@@ -52,7 +52,7 @@ Requires Python 3.12+ and [uv](https://docs.astral.sh/uv/).
 From PyPI:
 
 ```bash
-uvx --from AgenticBridge agent-bridge --status
+uvx --from AgenticBridge agent-bridge --version
 ```
 
 From source:
@@ -60,7 +60,7 @@ From source:
 ```bash
 git clone https://github.com/saagpatel/agent-bridge
 cd agent-bridge
-uv sync --extra dev
+uv sync --frozen --extra dev
 uv run pytest
 uv run ruff check .
 ```
@@ -103,7 +103,7 @@ Everything machine-specific is an environment variable. Defaults are sensible.
 
 | Variable | Default | Purpose |
 |---|---|---|
-| `AGENT_BRIDGE_DB_PATH` | `~/.local/share/agent-bridge/bridge.db` | Where the SQLite file lives |
+| `AGENT_BRIDGE_DB_PATH` | `$XDG_DATA_HOME/agent-bridge/bridge.db` if set, otherwise `~/.local/share/agent-bridge/bridge.db` | Where the SQLite file lives |
 | `AGENT_BRIDGE_MARKDOWN_PATH` | next to the DB | Where the markdown mirror is written |
 | `AGENT_BRIDGE_AGENTS` | `claude-code,codex,claude-ai,human` | Allowlist of agent identities that may write |
 | `AGENT_BRIDGE_ACTIVITY_RETENTION` | `50` | Activity rows kept per agent |
@@ -112,6 +112,33 @@ Everything machine-specific is an environment variable. Defaults are sensible.
 Agent identities are **not** baked into the schema — set `AGENT_BRIDGE_AGENTS` to whatever your fleet is called (`cursor`, `aider`, `windsurf`, `human`, …).
 
 ---
+
+## Local verification
+
+Run commands from the repository root with Python 3.12+ and `uv`. CI uses
+`uv sync --frozen --extra dev`, `uv run ruff check .`, and `uv run pytest`.
+For a focused database/health check, use `uv run pytest tests/test_health.py`;
+the tests create their own temporary SQLite databases (`tests/conftest.py`).
+There is no separate formatter, typecheck, or browser UI gate configured.
+
+CLI diagnostics call `open_db`: even `--status` and `--doctor` may create or
+migrate the selected database. For a disposable smoke check, choose both paths
+explicitly instead of using the normal data store:
+
+```bash
+bridge_fixture=$(mktemp -d)
+AGENT_BRIDGE_DB_PATH="$bridge_fixture/bridge.db" \
+AGENT_BRIDGE_MARKDOWN_PATH="$bridge_fixture/bridge.md" \
+  uv run python -m agent_bridge --status
+AGENT_BRIDGE_DB_PATH="$bridge_fixture/bridge.db" \
+AGENT_BRIDGE_MARKDOWN_PATH="$bridge_fixture/bridge.md" \
+  uv run python -m agent_bridge --doctor
+```
+
+The generated files are disposable fixture data. MCP client registration and a
+real stdio/client interaction are separate integration checks; unit tests and
+these diagnostics do not prove client registration. No live bridge is needed
+for local verification.
 
 ## CLI
 
@@ -145,7 +172,7 @@ uv run python -m agent_bridge                  # start the MCP server (stdio)
 
 The interesting parts are documented in [docs/architecture.md](docs/architecture.md), and the story of the system it came from is in [docs/one-person-ai-operating-system.md](docs/one-person-ai-operating-system.md). Three ideas carry the whole thing:
 
-1. **One write path per table, FTS mirror updated in the same transaction.** This single invariant is what keeps search honest — there's no separate "reindex" step that can fall behind. `health` checks it; `rebuild_index` repairs it.
+1. **Indexed text writes and retention deletions update the FTS mirror in the same transaction.** This single invariant is what keeps search honest — there's no separate "reindex" step that can fall behind. `health` checks entry counts and missing/orphaned entries, not text equality; `rebuild_index` rebuilds the mirror from source text.
 2. **Core logic is transport-free.** Every tool is a plain `async` function over a database connection. The MCP server is a thin wrapper. That's why the test suite never needs a live MCP client — it calls the functions directly.
 3. **Ownership in the app layer, not the schema.** Agent identities are config, so the same schema serves any team without a migration.
 

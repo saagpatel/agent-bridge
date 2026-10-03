@@ -16,7 +16,7 @@ decisions that are worth understanding before you extend it.
                               │  plain async calls
                               ▼
             ┌──────────────────────────────────┐
-            │  agent_bridge.tools.*             │  ← all the logic, transport-free
+            │  agent_bridge.tools.*             │  ← core tool logic, transport-free
             │   functions over a db connection  │
             └──────────────────────────────────┘
                               │
@@ -28,7 +28,8 @@ decisions that are worth understanding before you extend it.
 
 ## Decision 1 — Core logic is transport-free
 
-Every tool is a plain `async def f(db, *, ...) -> dict`. The MCP server
+Core tool functions are plain `async` functions over a database connection;
+return values include dictionaries, lists, strings, and `None`. The MCP server
 (`server.py`) is the *only* file that imports the `mcp` SDK; it does nothing but
 pull the connection out of the lifespan context and call the core function.
 
@@ -44,26 +45,29 @@ Why it matters:
 - **You could bolt on a second transport** (HTTP, a CLI subcommand per tool)
   without touching the logic.
 
-## Decision 2 — One write path per table, FTS updated in the same transaction
+## Decision 2 — Indexed text writes and FTS updates share a transaction
 
 The FTS5 `content_index` table mirrors the text of every row in
 `context_sections`, `activity_log`, `snapshots`, and `handoffs`. The rule that
 keeps it honest:
 
-> Every function that mutates an indexable table updates the FTS mirror **in the
+> Indexed text writes and retention deletions update the FTS mirror **in the
 > same transaction**, via the helpers in `db.py` (`upsert_fts_entry`,
 > `gc_fts_orphans`, `insert_activity_row`).
 
-There is no background reindexer that can fall behind. If the index and the
-source tables ever disagree, that's a bug, and:
+Handoff pickup and clearing only change metadata that is not indexed, so they
+leave the FTS entries unchanged. There is no background reindexer that can fall
+behind. Entry-count drift or missing/orphaned entries are bugs, and:
 
-- `health` / `status` report it as `fts_missing` (source row, no index entry) or
-  `fts_orphaned` (index entry, no source row), and flip `ok` to `False`.
+- `health` reports missing/orphaned counts under `fts_index.missing` and
+  `fts_index.orphaned`; `status` exposes them as `fts_missing` and `fts_orphaned`.
+  Entry-count drift or missing/orphaned entries flip `ok` to `False`.
 - `rebuild_index` (`repopulate_content_index`) repairs it by rebuilding the
   index from the source tables. It's idempotent.
 
 `collect_fts_metrics` in `db.py` is the single source of truth for this check;
-both `health` and the tests use it.
+both `health` and the tests use it. It does not compare indexed text to source
+text.
 
 ## Decision 3 — Ownership is config, not schema
 
@@ -72,7 +76,7 @@ SQL `CHECK` constraints. That couples the schema to one machine and forces a
 migration to add an agent.
 
 Here, identity columns are plain `TEXT`. The allowlist lives in `config.py`
-(`AGENT_BRIDGE_AGENTS`), and write tools validate the caller against it in the
+(`AGENT_BRIDGE_AGENTS`), and tools that accept a caller validate it in the
 app layer. Section ownership is *first-writer-wins*: whoever creates a section
 owns it, and only the owner can update it. No static owner map, no migration to
 onboard a new agent.
@@ -88,10 +92,11 @@ an append-only audit ledger.
 ## Decision 5 — Step-wise migrations
 
 `ensure_schema` reads `PRAGMA user_version`, refuses to open a DB newer than the
-build supports, and (when migrations exist) advances one version at a time,
-committing after each step so a crash mid-upgrade leaves the DB at the last
-fully-migrated version. v1 is the initial release; the migration loop is in place
-for when the schema grows.
+build supports, and initializes an unversioned DB at v1. Future migrations
+advance one version at a time, committing after each step so a crash mid-upgrade
+leaves the DB at the last fully-migrated version. No migrations beyond v1 exist
+yet; the loop is a placeholder that raises if a migration path is needed but
+undefined.
 
 ## Adding a new tool
 
