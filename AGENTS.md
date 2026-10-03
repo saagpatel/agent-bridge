@@ -6,7 +6,7 @@
 
 ## Current State
 
-The repo is on `feat/initial-release` with the v0.1.0 implementation present. It has a real test suite under `tests/`, package metadata in `pyproject.toml`, and architecture notes under `docs/`.
+Package metadata in `pyproject.toml` and `uv.lock` is at v0.1.2; the CLI version constant in `src/agent_bridge/__init__.py` remains v0.1.0. It has a real test suite under `tests/` and architecture notes under `docs/`.
 
 ## Stack
 
